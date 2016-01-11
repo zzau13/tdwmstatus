@@ -5,14 +5,14 @@
  */
 
 #define TIME_FORMAT "%a %d/%m/%Y | %X"
-#define OUTPUT_FORMAT "%s C: %hu%% R: %hu%% H: %hu%% T: %huº N: %llb <|< %llK B: %hu%%%c | %s V: %hu%% | %s | %s"  
-/*  loadavg, cpu, ram, disk_usage/disk_total, temp, net_send, net_rec, batt_cap, batt_stat, kernel, volume, uptime, time */
+#define OUTPUT_FORMAT "%s C: %hu%% R: %hu%% H: %hu%% T: %huº B: %hu%%%c | %s V: %hu%% | %s | %s"  
+/*  loadavg, cpu, ram, disk_usage/disk_total, temp, batt_cap, batt_stat, kernel, volume, uptime, time */
 
 /* Times */
-#define PERIODO 1
-#define PERIODO_1 5
-#define PERIODO_2 30
-#define PERIODO_MAX 60
+#define PERIOD 1
+#define PERIOD_1 5
+#define PERIOD_2 30
+#define PERIOD_MAX 60
 
 /* Files */
 #define TEMP_FILE	"/sys/class/hwmon/hwmon0/device/temp1_input"
@@ -34,8 +34,5 @@ static char get_batt_stat(void);
 static char * get_time(void);
 static char * get_loadavg(void);
 static char * get_uptime(void);
-static void get_net(unsigned int, unsigned int);
 char * smprintf(char *, ...);
 static void set_status(Display *, char *);
-
-

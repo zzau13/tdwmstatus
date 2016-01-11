@@ -29,7 +29,6 @@ main(void)
 	char *status, batt_stat, *loadavg, *time, *uptime;
 	char *kernel = get_kernel();
 	uint_fast16_t ram, disk, temp, batt_cap, volume, n = 0;
-	unsigned int net_send = 0, net_rec = 0;
 
 	/* Static var */
 	static Display *dpy;
@@ -49,7 +48,6 @@ main(void)
 		{
 			ram = get_ram();
 			temp = get_temp();
-			get_net(net_send, net_rec);
 		}
 
 		if(( n % PERIOD_2 ) == 0)
@@ -72,8 +70,6 @@ main(void)
 				ram,
 				disk,
 				temp,
-				net_send,
-				net_rec,
 				batt_cap,
 				batt_stat, 
 				kernel,
@@ -155,7 +151,6 @@ get_volume(void)
 {
 
 	long int vol, max, min;
-	int mute =0;
 	snd_mixer_t *handle;
 	snd_mixer_elem_t *elem;
 	snd_mixer_selem_id_t *s_elem;
@@ -181,19 +176,6 @@ get_volume(void)
 	snd_mixer_handle_events(handle);
 	snd_mixer_selem_get_playback_volume_range(elem, &min, &max);
 	snd_mixer_selem_get_playback_volume(elem, 0, &vol);
-
-	snd_mixer_selem_get_playback_switch(elem, 0, &mute);
-	printf("%d\n", mute);
-
-	snd_mixer_selem_id_set_name(s_elem, "Headphone");
-	elem = snd_mixer_find_selem(handle, s_elem);
-	snd_mixer_selem_get_playback_switch(elem, 0, &mute);
-	printf("%d\n", mute);
-	
-	snd_mixer_selem_id_set_name(s_elem, "Speaker");
-	elem = snd_mixer_find_selem(handle, s_elem);
-	snd_mixer_selem_get_playback_switch(elem, 0, &mute);
-	printf("%d\n", mute);
 
 	snd_mixer_selem_id_free(s_elem);
 	snd_mixer_close(handle);
@@ -292,49 +274,6 @@ get_uptime(void)
 	h = info.uptime/3600;
 	m = (info.uptime - h*3600 )/60;
 	return smprintf("%dh:%dm",h,m);
-}
-
-static void
-get_net(unsigned int receivedabs, unsigned int sentabs)
-{
-	char buf[255];
-	char *datastart;
-	static int bufsize = 255;
-	FILE *devfd;
-	unsigned long long int receivedacc, sentacc;
-
-	receivedabs = 0;
-	sentabs = 0;
-
-	if(!(devfd = fopen(NET_FILE, "r")))
-	{
-		perror("tdwmstatus: error: NET: ");
-		return;
-	}
-
-	// Ignore the first two lines of the file
-	fgets(buf, bufsize, devfd);
-	fgets(buf, bufsize, devfd);
-
-	while (fgets(buf, bufsize, devfd)) {
-	    if ((datastart = strstr(buf, "lo:")) == NULL) {
-		datastart = strstr(buf, ":");
-
-		// With thanks to the conky project at http://conky.sourceforge.net/
-		sscanf(datastart + 1, "%llu  %*d     %*d  %*d  %*d  %*d   %*d        %*d       %llu",\
-		       &receivedacc, &sentacc);
-		receivedabs += (unsigned int)receivedacc;
-		sentabs += (unsigned int)sentacc;
-	    }
-	}
-
-	free(datastart);
-	fclose(devfd);
-
-	if(receivedabs != 0)
-		receivedabs /= 1024;
-	if(sentabs !=0)
-		sentabs /= 1024;
 }
 
 char *
