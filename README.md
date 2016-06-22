@@ -19,11 +19,10 @@ Return in order:
 - percentage use 
   - cpu 
   - ram 
-  - disc Home mount 
+  - /home
 - cpu temp
 - percentage battery 
 - battery status 
-- uname 
 - volume
 - uptime 
 - date
