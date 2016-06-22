@@ -27,7 +27,6 @@ int
 main(void)
 {
 	char *status, batt_stat, *loadavg, *time, *uptime;
-	char *kernel = get_kernel();
 	uint_fast16_t ram, disk, temp, batt_cap, volume, n = 0;
 
 	/* Static var */
@@ -72,7 +71,6 @@ main(void)
 				temp,
 				batt_cap,
 				batt_stat, 
-				kernel,
 				volume,
 				uptime,
 				time);
@@ -221,13 +219,6 @@ get_batt_cap(void)
 
 }
 
-static char *
-get_kernel(void)
-{
-	struct utsname kernel;
-	uname(&kernel);
-	return smprintf("%s", kernel.release);
-}
 
 static char
 get_batt_stat(void)

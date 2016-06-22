@@ -5,7 +5,7 @@
  */
 
 #define TIME_FORMAT "%a %d/%m/%Y | %X"
-#define OUTPUT_FORMAT "%s C: %hu%% R: %hu%% H: %hu%% T: %huº B: %hu%%%c | %s V: %hu%% | %s | %s"  
+#define OUTPUT_FORMAT "%s \x01 C: %hu%% R: %hu%% H: %hu%% T: %huº B: %hu%%%c V: %hu%% | %s | %s"  
 /*  loadavg, cpu, ram, disk_usage/disk_total, temp, batt_cap, batt_stat, kernel, volume, uptime, time */
 
 /* Times */
@@ -29,7 +29,6 @@ static uint_fast16_t get_disk(void);
 static uint_fast16_t get_volume(void);
 static uint_fast16_t get_temp(void);
 static uint_fast16_t get_batt_cap(void);
-static char * get_kernel(void);
 static char get_batt_stat(void);
 static char * get_time(void);
 static char * get_loadavg(void);

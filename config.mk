@@ -1,6 +1,5 @@
 NAME = tdwmstatus
-VERSION = 2.75-beta-01
-
+VERSION = 2.67
 
 # paths
 PREFIX = /usr/local
