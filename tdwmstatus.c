@@ -26,10 +26,10 @@
 int 
 main(void)
 {
-	char *status, batt_stat, *loadavg, *time, *uptime;
-	uint_fast16_t ram, disk, temp, batt_cap, volume, n = 0;
+	char *status, *time, *uptime = NULL;
 
-	/* Static var */
+	static char batt_stat;
+	static uint_fast16_t temp, batt_cap, volume, n = 0;
 	static Display *dpy;
 
 	if (!(dpy = XOpenDisplay(NULL))) {
@@ -41,22 +41,24 @@ main(void)
 	{
 
 		time = get_time();
-		loadavg = get_loadavg();
 
 		if(( n % PERIOD_1 ) == 0)
 		{
-			ram = get_ram();
 			temp = get_temp();
 		}
 
 		if(( n % PERIOD_2 ) == 0)
+		{
 			volume = get_volume();
 			batt_cap = get_batt_cap();
 			batt_stat = get_batt_stat();
+		}
 
 		if(( n % PERIOD_MAX) == 0 )
 		{
-			disk = get_disk();
+			if (uptime != NULL) {
+				free(uptime);
+			}
 			uptime = get_uptime();
 		}
 
@@ -64,10 +66,8 @@ main(void)
 		n = n % PERIOD_MAX;
 
 		status = smprintf(OUTPUT_FORMAT,
-				loadavg, 
+				get_loadavg(),
 				get_cpu(), 
-				ram,
-				disk,
 				temp,
 				batt_cap,
 				batt_stat, 
@@ -76,7 +76,6 @@ main(void)
 				time);
 
 		free(time);
-		free(loadavg);
 
 		set_status(dpy, status);
 		free(status);
@@ -114,34 +113,7 @@ get_cpu(void)
 	previous_total = total;
 	previous_idle  = buff[3];
 
-	return ((1000 * (diff_total - diff_idle) / diff_total + 1) / 10);
-}
-
-static uint_fast16_t 
-get_ram(void)
-{
-	uint_fast16_t used = 0, total = 0;
-
-	struct sysinfo mem;
-	sysinfo(&mem);
-
-	total = (uint_fast16_t) mem.totalram / MB;
-	used = (uint_fast16_t) (mem.totalram - mem.freeram - mem.bufferram - 
-			mem.sharedram) / MB;
-	return ((used * 100) / total);
-}
-
-static uint_fast16_t 
-get_disk(void)
-{
-	struct statvfs buf;
-	if(statvfs(getenv("HOME"), &buf))
-	{
-		perror("tdwmstatus: error: DISK: ");
-		return 1;
-	}
-	return (uint_fast16_t)( 100 - (( (double)buf.f_bfree / 
-					(double)buf.f_blocks ) * 100 ));
+	return (100 * (diff_total - diff_idle) / diff_total + 1);
 }
 
 static uint_fast16_t 
@@ -189,11 +161,8 @@ get_temp(void)
 
 	if (!(( file = fopen(TEMP_FILE, "rt")))) 
 	{
-		if (!(( file = fopen(TEMP_FILE1, "rt"))))
-		{
-			perror("tdwmstatus error: TEMP: ");
-			return 1;
-		}
+		perror("tdwmstatus error: TEMP: ");
+		return 1;
 	}
 
 	fscanf(file, "%lu", &ret);
@@ -224,14 +193,14 @@ static char
 get_batt_stat(void)
 {
 	FILE *file;
-	char st;
+	char estado_bateria;
 
 	if ((file = fopen(BATTERY_STATUS_FILE, "r")) == NULL )
 		return 'U';
 
-	st = fgetc(file);
+	estado_bateria = fgetc(file);
 	fclose(file);
-	return st;
+	return estado_bateria;
 }
 
 static char *
@@ -267,6 +236,7 @@ get_uptime(void)
 	return smprintf("%dh:%dm",h,m);
 }
 
+
 char *
 smprintf(char *fmt, ...)
 {
@@ -281,6 +251,7 @@ smprintf(char *fmt, ...)
 	ret = malloc(++len);
 	if (ret == NULL) {
 		perror("tdwmstatus: error: malloc: ");
+		va_end(fmtargs);
 		exit(1);
 	}
 
