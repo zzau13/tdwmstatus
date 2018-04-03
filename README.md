@@ -1,6 +1,6 @@
 # tiny/turbo/throttling dwm status bar 
 
-Run in linux kernel 4.0.7
+Test in linux kernel 4.15.*
 
 ## Install
 ```

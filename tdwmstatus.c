@@ -1,10 +1,6 @@
 /*
- * Compile with:
- * gcc -Wall -Wextra -O2 dwm-bar.c -o dwm-bar -lasound -lX11 
- *
- * author : Juan Aguilar Santillana
- * version : 2.74-1
- * date : 16/06/2015
+ * version : 2.74-2
+ * date : 06/03/2018
  */
 
 #include <time.h>
@@ -26,7 +22,7 @@
 int 
 main(void)
 {
-	char *status, *time, *uptime = NULL;
+	char *status, *time, *loadavg, *uptime = NULL;
 
 	static char batt_stat;
 	static uint_fast16_t temp, batt_cap, volume, n = 0;
@@ -40,8 +36,6 @@ main(void)
 	while(!(sleep(PERIOD)))
 	{
 
-		time = get_time();
-
 		if(( n % PERIOD_1 ) == 0)
 		{
 			temp = get_temp();
@@ -54,7 +48,7 @@ main(void)
 			batt_stat = get_batt_stat();
 		}
 
-		if(( n % PERIOD_MAX) == 0 )
+		if((n = (n + 1) % PERIOD_MAX) == 1 )
 		{
 			if (uptime != NULL) {
 				free(uptime);
@@ -62,11 +56,11 @@ main(void)
 			uptime = get_uptime();
 		}
 
-		n++;
-		n = n % PERIOD_MAX;
+		time = get_time();
+		loadavg = get_loadavg();
 
 		status = smprintf(OUTPUT_FORMAT,
-				get_loadavg(),
+				loadavg,
 				get_cpu(), 
 				temp,
 				batt_cap,
@@ -76,6 +70,7 @@ main(void)
 				time);
 
 		free(time);
+		free(loadavg);
 
 		set_status(dpy, status);
 		free(status);
@@ -193,14 +188,15 @@ static char
 get_batt_stat(void)
 {
 	FILE *file;
-	char estado_bateria;
+	char status;
 
 	if ((file = fopen(BATTERY_STATUS_FILE, "r")) == NULL )
 		return 'U';
 
-	estado_bateria = fgetc(file);
+	status = fgetc(file);
 	fclose(file);
-	return estado_bateria;
+
+	return status;
 }
 
 static char *
@@ -209,6 +205,7 @@ get_time(void)
 	char buff[32];
 	time_t t = time(NULL);
 	strftime(buff, sizeof(buff)-1, TIME_FORMAT, localtime(&t));
+
 	return smprintf("%s", buff);
 }
 
@@ -250,7 +247,7 @@ smprintf(char *fmt, ...)
 
 	ret = malloc(++len);
 	if (ret == NULL) {
-		perror("tdwmstatus: error: malloc: ");
+		perror("tdwmstatus: error: malloc: smprintf");
 		va_end(fmtargs);
 		exit(1);
 	}
