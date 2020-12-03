@@ -14,7 +14,7 @@ LIBS = -L/usr/lib -lc -L${X11LIB} -lX11 -lasound
 
 # flags
 CPPFLAGS = -DVERSION=\"${VERSION}\"
-CFLAGS = -std=c99 -pedantic -Wall -Wextra -O0 ${INCS} ${CPPFLAGS}
+CFLAGS = -std=c99 -pedantic -Wall -Wextra -Werror -Wno-implicit-function-declaration -O0 ${INCS} ${CPPFLAGS}
 #CFLAGS = -g -std=c99 -pedantic -Wall -Wextra -O0 ${INCS} ${CPPFLAGS}
 #LDFLAGS = -g ${LIBS}
 LDFLAGS = -s ${LIBS}
