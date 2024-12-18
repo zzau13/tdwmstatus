@@ -28,7 +28,7 @@
 #define PERIOD_MAX 60
 
 /* Files */
-#define TEMP_FILE	"/sys/class/hwmon/hwmon0/temp1_input"
+#define TEMP_FILE "/sys/class/thermal/thermal_zone0/temp"
 #define BATTERY_STATUS_FILE	"/sys/class/power_supply/BAT0/status"
 #define CAPACITY_FILE	"/sys/class/power_supply/BAT0/capacity"
 #define STAT_FILE "/proc/stat"
