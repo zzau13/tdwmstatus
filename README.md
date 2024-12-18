@@ -1,13 +1,13 @@
 # tiny/turbo/throttling dwm status bar 
 
-Test in linux kernel 4.15.*
+Test in linux kernel 6.11.*
 
 ## Install
 ```
-$ git clone https://github.com/botika/tdwmstatus.git
+$ git clone https://github.com/zzau13/tdwmstatus.git
 $ cd tdwmstatus
 $ make 
-# make install
+$ sudo make install
 ```
 ## Shot
 ![Shot](shot.png)
