@@ -1,6 +1,6 @@
 /*
- * version : 2.74-2
- * date : 06/03/2018
+ * version : 2.75
+ * date : 29/04/2026
  */
 
 #include <stdlib.h>
@@ -8,6 +8,7 @@
 #include <time.h>
 #include <string.h>
 #include <inttypes.h>
+#include <stdarg.h>
 
 #include <sys/statvfs.h>
 #include <sys/sysinfo.h>
@@ -18,7 +19,7 @@
 #define MB 1048576
 
 #define TIME_FORMAT "%a %d/%m/%Y  %X"
-#define OUTPUT_FORMAT " %s C: %hu%% T: %huº B: %hu%%%c V: %hu%% | %s | %s "  
+#define OUTPUT_FORMAT " %s  %hu%%  %huº  %hu%%%c  %hu%% | %s |  %s "
 /*  loadavg, cpu, temp, batt_cap, batt_stat, kernel, volume, uptime, time */
 
 /* Times */
@@ -28,9 +29,15 @@
 #define PERIOD_MAX 60
 
 /* Files */
+#ifndef TEMP_FILE
 #define TEMP_FILE "/sys/class/thermal/thermal_zone0/temp"
-#define BATTERY_STATUS_FILE	"/sys/class/power_supply/BAT0/status"
-#define CAPACITY_FILE	"/sys/class/power_supply/BAT0/capacity"
+#endif
+#ifndef BATTERY_STATUS_FILE
+#define BATTERY_STATUS_FILE "/sys/class/power_supply/BAT0/status"
+#endif
+#ifndef CAPACITY_FILE
+#define CAPACITY_FILE "/sys/class/power_supply/BAT0/capacity"
+#endif
 #define STAT_FILE "/proc/stat"
 
 static uint_fast16_t get_cpu(void);
@@ -60,7 +67,6 @@ main(void)
 
 	while(!(sleep(PERIOD)))
 	{
-
 		if(( n % PERIOD_1 ) == 0)
 		{
 			temp = get_temp();
@@ -93,7 +99,6 @@ main(void)
 				volume,
 				uptime,
 				time);
-
 		free(time);
 		free(loadavg);
 
@@ -111,6 +116,7 @@ get_cpu(void)
 	static uint_fast16_t previous_total = 0, previous_idle = 0;
 	uint_fast16_t x, diff_total, diff_idle, buff[7];
 	uint_fast16_t total = 0;
+	uint_fast16_t cpu_pct;
 
 	FILE *file = fopen(STAT_FILE, "r");
 	if (file == NULL) 
@@ -119,7 +125,7 @@ get_cpu(void)
 		return 1;
 	}
 
-	fscanf(file, "%*s %lu %lu %lu %lu %lu %lu %lu", 
+	fscanf(file, "%*s %lu %lu %lu %lu %lu %lu %lu",
 			&buff[0], &buff[1], &buff[2], &buff[3], &buff[4], &buff[5], &buff[6]);
 
 	fclose(file);
@@ -129,11 +135,12 @@ get_cpu(void)
 
 	diff_total     = total - previous_total;
 	diff_idle      = buff[3] - previous_idle;
+	cpu_pct = (100 * (diff_total - diff_idle) / diff_total + 1);
 
 	previous_total = total;
 	previous_idle  = buff[3];
 
-	return (100 * (diff_total - diff_idle) / diff_total + 1);
+	return cpu_pct;
 }
 
 static uint_fast16_t 
